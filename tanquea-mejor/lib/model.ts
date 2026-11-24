@@ -1,4 +1,4 @@
-export type Fuel = "corriente" | "extra" | "diesel" | "biodiesel";
+export type Fuel = "corriente" | "extra" | "diesel" | "biodiesel" | "gncv";
 export type Point = { lat: number; lon: number };
 export type Observation = {
   id: string;
@@ -20,7 +20,11 @@ export const fuels: Record<Fuel, string> = {
   extra: "Gasolina extra",
   diesel: "Diésel",
   biodiesel: "Biodiésel extra",
+  gncv: "Gas natural vehicular (GNCV)",
 };
+export function unitForFuel(fuel: Fuel) {
+  return fuel === "gncv" ? "m³" : "galón";
+}
 export function normalize(value: string) {
   return value
     .normalize("NFD")

@@ -2,7 +2,7 @@
 import { useEffect, useRef } from "react";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
-import type { Observation, Point } from "../lib/model";
+import { unitForFuel, type Observation, type Point } from "../lib/model";
 export default function MapView({
   stations,
   origin,
@@ -20,7 +20,12 @@ export default function MapView({
       const point: L.LatLngTuple = [s.point.lat, s.point.lon];
       points.push(point);
       const tooltip = document.createElement("span");
-      tooltip.textContent = s.name + " · $" + s.price.toLocaleString("es-CO");
+      tooltip.textContent =
+        s.name +
+        " · $" +
+        s.price.toLocaleString("es-CO") +
+        " / " +
+        unitForFuel(s.fuel);
       L.circleMarker(point, {
         radius: 7,
         color: "#173b35",

@@ -11,3 +11,9 @@ La distancia se calcula por Haversine con radio terrestre 6371 km. La multiplica
 Ejemplo: 10 galones a COP 15.000, distancia de ida 2 km, 40 km/galón y referencia COP 16.000 por galón. Compra COP 150.000, desplazamiento COP 1.600 y costo COP 151.600.
 
 El costo es una simulación basada en datos históricos y supuestos del usuario. No modela tráfico, ruta real, disponibilidad ni cambios de precio. No es un intervalo estadístico calibrado.
+
+## Comparación actual de cotizaciones
+
+Para evitar extrapolar datos antiguos, el conductor introduce dos precios actuales confirmados y la desviación total real en km. Sea q la cantidad, p0 el precio habitual, p1 la alternativa, r el rendimiento en km por unidad y pt el precio del combustible consumido en el trayecto.
+
+Ahorro bruto = q(p0-p1). Costo de desvío = d pt/r. Ahorro neto = q(p0-p1) - d pt/r. La desviación adicional máxima rentable es max(0, q(p0-p1)r/pt). El precio de referencia CREG puede inicializar p0 en ciudades y combustibles cubiertos, pero debe sustituirse por una cotización real para una comparación de surtidor. GNCV se expresa en m³ y nunca se convierte a galones sin información física adicional.

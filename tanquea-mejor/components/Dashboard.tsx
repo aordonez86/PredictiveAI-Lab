@@ -5,11 +5,13 @@ import {
   estimateCost,
   freshness,
   fuels,
+  unitForFuel,
   type Fuel,
   type Observation,
   type Point,
 } from "../lib/model";
 import dynamic from "next/dynamic";
+import ReferencePanel from "./ReferencePanel";
 const MapView = dynamic(() => import("./MapView"), {
   ssr: false,
   loading: () => <p>Cargando mapa…</p>,
@@ -24,7 +26,7 @@ type Result = { stations: Observation[]; warnings: string[] };
 export default function Dashboard() {
   const [city, setCity] = useState("11001"),
     [fuel, setFuel] = useState<Fuel>("corriente"),
-    [kind, setKind] = useState("auto");
+    [kind, setKind] = useState("current");
   const [result, setResult] = useState<Result>({ stations: [], warnings: [] }),
     [loading, setLoading] = useState(true),
     [error, setError] = useState("");
@@ -85,6 +87,7 @@ export default function Dashboard() {
       { timeout: 10000 },
     );
   }
+  const unit = unitForFuel(fuel);
   const rows = useMemo(() => {
     const q = Number(quantity),
       r = Number(efficiency),
@@ -161,7 +164,7 @@ export default function Dashboard() {
             <small>INTELIGENCIA DE COMBUSTIBLE</small>
           </div>
         </div>
-        <div className="country">COLOMBIA · COP/GALÓN</div>
+        <div className="country">COLOMBIA · COP/{unit.toUpperCase()}</div>
       </header>
       <section className="hero">
         <div className="eyebrow">MOVILIDAD INTELIGENTE</div>
@@ -171,8 +174,8 @@ export default function Dashboard() {
           <em>Cada kilómetro.</em>
         </h1>
         <p>
-          Encuentra precios históricos de combustible y compara el costo de
-          desplazarte. Consulta siempre el precio actual con la estación.
+          Consulta referencias oficiales de 2026, explora registros por estación
+          y calcula cuánto puedes ahorrar al desviarte.
         </p>
       </section>
       <section className="panel filters" aria-label="Filtros">
@@ -200,6 +203,8 @@ export default function Dashboard() {
             onChange={(e) => {
               resetResults();
               setFuel(e.target.value as Fuel);
+              if (e.target.value === "gncv" && kind !== "demo")
+                setKind("current");
             }}
           >
             {Object.entries(fuels).map(([id, name]) => (
@@ -219,30 +224,57 @@ export default function Dashboard() {
               if (e.target.value === "demo") setCity("11001");
             }}
           >
-            <option value="auto">Último histórico disponible</option>
-            <option value="monthly">Promedio mensual · 2022</option>
-            <option value="reported">Último registro · hasta 2018</option>
+            <option value="current">Referencias y datos de 2026</option>
+            {fuel !== "gncv" && (
+              <option value="auto">Archivo histórico por estación</option>
+            )}
+            {fuel !== "gncv" && (
+              <option value="monthly">Promedio mensual · 2022</option>
+            )}
+            {fuel !== "gncv" && (
+              <option value="reported">Último registro · hasta 2018</option>
+            )}
             <option value="demo">Demostración ficticia</option>
           </select>
         </label>
-        <button onClick={locate} className="primary">
+        <button
+          onClick={locate}
+          className="primary"
+          disabled={!mapped.length}
+          title={
+            !mapped.length
+              ? "Sin estaciones con coordenadas verificadas"
+              : undefined
+          }
+        >
           Usar mi ubicación
         </button>
       </section>
+      {kind !== "demo" && (
+        <ReferencePanel key={city + fuel} city={city} fuel={fuel} />
+      )}
       <div className="notice" role="status">
         <strong>
           {kind === "demo"
             ? "Modo demostración"
-            : "Datos históricos · no son precios actuales"}
+            : kind === "current" || fuel === "gncv"
+              ? "Información oficial disponible · confirma el precio"
+              : "Archivo histórico · no son precios actuales"}
         </strong>
         <span>
-          {kind === "auto"
-            ? "Se prioriza el último promedio mensual disponible; si no hay datos, se buscan registros individuales históricos."
-            : kind === "monthly"
-              ? "Promedios de febrero de 2022. La cobertura comprobada es Bogotá."
-              : kind === "reported"
-                ? "Última observación individual disponible por estación; registros hasta mayo de 2018."
-                : "Los precios y las estaciones de este modo se han simulado."}
+          {kind === "demo"
+            ? "Precios y estaciones ficticios."
+            : fuel === "gncv"
+              ? "Promedios mensuales oficiales de 2026 por estación. Unidades en COP/m³."
+              : kind === "current"
+                ? "La vista incluye únicamente registros individuales del año disponible en una exportación validada. Consulta la referencia de tu ciudad y simula con precios confirmados."
+                : kind === "auto"
+                  ? "Se prioriza el último promedio mensual disponible; si no hay datos, se buscan registros individuales históricos."
+                  : kind === "monthly"
+                    ? "Promedios de febrero de 2022. La cobertura comprobada es Bogotá."
+                    : kind === "reported"
+                      ? "Última observación individual disponible por estación; registros hasta mayo de 2018."
+                      : "Los precios y las estaciones de este modo se han simulado."}
         </span>
       </div>
       <section className="grid">
@@ -260,7 +292,7 @@ export default function Dashboard() {
                 setPage(1);
               }}
             >
-              <option value="price">Menor precio histórico</option>
+              <option value="price">Menor precio del periodo</option>
               <option value="distance" disabled={!origin || !mapped.length}>
                 Menor distancia
               </option>
@@ -294,16 +326,21 @@ export default function Dashboard() {
           )}
           {!loading && !error && !rows.length && (
             <div className="empty">
-              No hay datos comparables para estos filtros. Prueba otra ciudad o
-              fuente.
+              {kind === "current" && fuel !== "gncv"
+                ? "No hay cotizaciones individuales actuales verificadas para esta selección. Usa el simulador o consulta el archivo histórico."
+                : "No hay datos comparables para estos filtros."}
             </div>
           )}
           {lowest && (
             <div className="summary">
-              <span>MENOR PRECIO REGISTRADO DISPONIBLE</span>
+              <span>
+                {lowest.station.kind === "monthly"
+                  ? "MENOR PROMEDIO DEL MES DISPONIBLE"
+                  : "MENOR PRECIO DEL PERIODO DISPONIBLE"}
+              </span>
               <strong>
                 {currency.format(lowest.station.price)}
-                <small> / gal</small>
+                <small> / {unit}</small>
               </strong>
               <p>
                 {lowest.station.name} · {lowest.station.date}
@@ -338,7 +375,7 @@ export default function Dashboard() {
                     </div>
                     <div className="price">
                       {currency.format(s.price)}
-                      <small>/ gal</small>
+                      <small>/ {unit}</small>
                     </div>
                   </div>
                   <div className="station-meta">
@@ -347,8 +384,12 @@ export default function Dashboard() {
                       {s.kind === "demo"
                         ? "Confianza: simulación"
                         : s.kind === "monthly"
-                          ? "Confianza actual: baja (promedio histórico)"
-                          : "Confianza actual: baja (registro histórico)"}
+                          ? kind === "current"
+                            ? "Promedio mensual, confirmar precio actual"
+                            : "Confianza actual: baja (promedio histórico)"
+                          : kind === "current"
+                            ? "Registro oficial, confirmar precio actual"
+                            : "Confianza actual: baja (registro histórico)"}
                     </span>
                     <span>
                       {km === undefined
@@ -415,130 +456,137 @@ export default function Dashboard() {
           )}
         </div>
         <aside>
-          <div className="panel map-panel">
-            <h2>Mapa de estaciones</h2>
-            {mapped.length ? (
-              <MapView stations={mapped} origin={origin} />
-            ) : (
-              <div className="map-empty">
-                <span>◎</span>
-                <p>Sin coordenadas verificadas</p>
-                <small>Las direcciones históricas siguen disponibles.</small>
-              </div>
-            )}
-            <p className="muted">
-              Las distancias son aproximaciones en línea recta. Las estaciones
-              sin coordenadas se mantienen visibles y no se incluyen en las
-              comparaciones por distancia.
-            </p>
-            <p role="status">{locationMessage}</p>
-            <details>
-              <summary>Ubicación manual</summary>
-              <div className="coordinates">
+          {(kind !== "current" || mapped.length > 0) && (
+            <>
+              <div className="panel map-panel">
+                <h2>Mapa de estaciones</h2>
+                {mapped.length ? (
+                  <MapView stations={mapped} origin={origin} />
+                ) : (
+                  <div className="map-empty">
+                    <span>◎</span>
+                    <p>Sin coordenadas verificadas</p>
+                    <small>
+                      Consulta las direcciones cuando la fuente las incluya.
+                    </small>
+                  </div>
+                )}
+                <p className="muted">
+                  Las distancias son aproximaciones en línea recta. Las
+                  estaciones sin coordenadas se mantienen visibles y no se
+                  incluyen en las comparaciones por distancia.
+                </p>
+                <p role="status">{locationMessage}</p>
+                <details>
+                  <summary>Ubicación manual</summary>
+                  <div className="coordinates">
+                    <label>
+                      Latitud
+                      <input
+                        value={lat}
+                        onChange={(e) => setLat(e.target.value)}
+                        type="number"
+                        step="any"
+                      />
+                    </label>
+                    <label>
+                      Longitud
+                      <input
+                        value={lon}
+                        onChange={(e) => setLon(e.target.value)}
+                        type="number"
+                        step="any"
+                      />
+                    </label>
+                  </div>
+                  <button
+                    onClick={() => {
+                      const a = Number(lat),
+                        b = Number(lon);
+                      if (
+                        lat &&
+                        lon &&
+                        Number.isFinite(a) &&
+                        Number.isFinite(b) &&
+                        Math.abs(a) <= 90 &&
+                        Math.abs(b) <= 180
+                      ) {
+                        setOrigin({ lat: a, lon: b });
+                        setPage(1);
+                        setLocationMessage("Ubicación manual activa.");
+                      } else setLocationMessage("Coordenadas inválidas.");
+                    }}
+                  >
+                    Aplicar
+                  </button>
+                </details>
+                {origin && (
+                  <button
+                    onClick={() => {
+                      setOrigin(undefined);
+                      setLocationMessage("Ubicación eliminada.");
+                    }}
+                  >
+                    Eliminar ubicación
+                  </button>
+                )}
                 <label>
-                  Latitud
+                  Radio de estaciones con coordenadas (km)
                   <input
-                    value={lat}
-                    onChange={(e) => setLat(e.target.value)}
                     type="number"
-                    step="any"
+                    min="1"
+                    max="100"
+                    value={radius}
+                    onChange={(e) => {
+                      setRadius(e.target.value);
+                      setPage(1);
+                    }}
+                  />
+                </label>
+              </div>
+              <div className="panel vehicle">
+                <h2>Mi vehículo</h2>
+                <p className="muted">
+                  Simula el costo histórico con tus propios supuestos.
+                </p>
+                <label>
+                  Cantidad ({unit})
+                  <input
+                    type="number"
+                    min="1"
+                    step="0.5"
+                    value={quantity}
+                    onChange={(e) => setQuantity(e.target.value)}
                   />
                 </label>
                 <label>
-                  Longitud
+                  Rendimiento (km/{unit})
                   <input
-                    value={lon}
-                    onChange={(e) => setLon(e.target.value)}
                     type="number"
-                    step="any"
+                    min="1"
+                    placeholder="Ej. 35"
+                    value={efficiency}
+                    onChange={(e) => setEfficiency(e.target.value)}
                   />
                 </label>
+                <label>
+                  Precio de referencia (COP/{unit})
+                  <input
+                    type="number"
+                    min="1"
+                    placeholder="Tu precio de referencia"
+                    value={refPrice}
+                    onChange={(e) => setRefPrice(e.target.value)}
+                  />
+                </label>
+                <p className="muted">
+                  Costo = cantidad × precio + (2 × distancia / rendimiento) ×
+                  precio de referencia. Ida y vuelta en línea recta, sin peajes
+                  ni tráfico.
+                </p>
               </div>
-              <button
-                onClick={() => {
-                  const a = Number(lat),
-                    b = Number(lon);
-                  if (
-                    lat &&
-                    lon &&
-                    Number.isFinite(a) &&
-                    Number.isFinite(b) &&
-                    Math.abs(a) <= 90 &&
-                    Math.abs(b) <= 180
-                  ) {
-                    setOrigin({ lat: a, lon: b });
-                    setPage(1);
-                    setLocationMessage("Ubicación manual activa.");
-                  } else setLocationMessage("Coordenadas inválidas.");
-                }}
-              >
-                Aplicar
-              </button>
-            </details>
-            {origin && (
-              <button
-                onClick={() => {
-                  setOrigin(undefined);
-                  setLocationMessage("Ubicación eliminada.");
-                }}
-              >
-                Eliminar ubicación
-              </button>
-            )}
-            <label>
-              Radio de estaciones con coordenadas (km)
-              <input
-                type="number"
-                min="1"
-                max="100"
-                value={radius}
-                onChange={(e) => {
-                  setRadius(e.target.value);
-                  setPage(1);
-                }}
-              />
-            </label>
-          </div>
-          <div className="panel vehicle">
-            <h2>Mi vehículo</h2>
-            <p className="muted">
-              Simula el costo histórico con tus propios supuestos.
-            </p>
-            <label>
-              Galones a comprar
-              <input
-                type="number"
-                min="1"
-                step="0.5"
-                value={quantity}
-                onChange={(e) => setQuantity(e.target.value)}
-              />
-            </label>
-            <label>
-              Rendimiento (km/galón)
-              <input
-                type="number"
-                min="1"
-                placeholder="Ej. 35"
-                value={efficiency}
-                onChange={(e) => setEfficiency(e.target.value)}
-              />
-            </label>
-            <label>
-              Precio de referencia (COP/galón)
-              <input
-                type="number"
-                min="1"
-                placeholder="Tu precio de referencia"
-                value={refPrice}
-                onChange={(e) => setRefPrice(e.target.value)}
-              />
-            </label>
-            <p className="muted">
-              Costo = galones × precio + (2 × distancia / rendimiento) × precio
-              de referencia. Ida y vuelta en línea recta, sin peajes ni tráfico.
-            </p>
-          </div>
+            </>
+          )}
           <div className="panel">
             <h2>Calidad de datos</h2>
             {result.warnings.map((w) => (

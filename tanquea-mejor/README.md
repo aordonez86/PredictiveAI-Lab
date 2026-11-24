@@ -4,7 +4,7 @@ Geospatial fuel decision intelligence for Colombia. Una aplicación web experime
 
 ## Estado
 
-MVP 0.1.0. La fuente mensual auditada contiene 1.368 filas de Bogotá correspondientes a febrero de 2022. La fuente de registros individuales llega hasta mayo de 2018. Los valores son históricos: **confirma el precio y disponibilidad con la estación**.
+MVP 0.2.0. La vista inicial muestra referencias CREG de noviembre de 2026 para 13 ciudades, el indicador DANE de octubre, acceso a reportes UPME y cotizaciones GNCV mensuales oficiales de 2026. El comparador permite introducir precios actuales confirmados y calcular ahorro neto y desvío máximo rentable. No se dispone aún de la exportación individual de gasolina y diésel de 2026: el enlace público de descarga de SICOM devuelve acceso bloqueado. El archivo histórico se puede activar explícitamente. La fuente mensual auditada contiene 1.368 filas de Bogotá correspondientes a febrero de 2022. La fuente de registros individuales llega hasta mayo de 2018. Los valores son históricos: **confirma el precio y disponibilidad con la estación**.
 
 La búsqueda por municipio, combustible, precio, dirección y marca funciona sin ubicación. Las coordenadas oficiales requieren habilitación después de confirmar los términos de reutilización de la capa UPME. El modo demostración permite probar el mapa y el modelo de costos con datos ficticios claramente identificados.
 

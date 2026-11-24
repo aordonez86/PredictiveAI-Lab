@@ -7,3 +7,5 @@ Configurar variables de entorno según .env.example. No habilitar la consulta ge
 Para producción con tráfico público, configurar límites de solicitudes y concurrencia por IP en el proxy de entrada según el entorno de despliegue. La API aplica validación, caché, timeout, misma procedencia y un límite global de 120 solicitudes por minuto por instancia, sin almacenar direcciones IP. No publicar secretos; los valores NEXT_PUBLIC son visibles en el navegador.
 
 Ejecutar npm audit como parte de la revisión de dependencias.
+
+Para habilitar precios individuales de combustibles líquidos con una exportación autorizada, usar `AUTHORIZED_LIQUID_STATIONS_FILE` y el esquema descrito en DATA_SOURCES.md. Mantener el archivo fuera del repositorio. El MVP incluye la copia GNCV de 2026. Las referencias regulatorias reflejan la Circular 371 de 2026; verificar las circulares posteriores antes de actualizar la referencia.

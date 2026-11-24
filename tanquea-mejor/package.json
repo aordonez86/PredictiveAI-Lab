@@ -1,7 +1,7 @@
 {
   "name": "tanquea-mejor",
-  "version": "0.1.0",
-  "description": "Comparador de combustible histórico para Colombia",
+  "version": "0.2.0",
+  "description": "Comparador de combustible hist\u00f3rico para Colombia",
   "scripts": {
     "dev": "next dev",
     "build": "next build",

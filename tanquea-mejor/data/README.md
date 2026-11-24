@@ -18,3 +18,7 @@ Esta copia conserva la licencia CC BY-SA 4.0 y la atribución original. La licen
 - Licencia: [CC BY-SA 4.0](https://creativecommons.org/licenses/by-sa/4.0/).
 - Último registro: 2018-05-13, 961 municipios.
 - `municipalities.json` es una lista derivada de códigos y nombres de municipio de esa copia, con la misma licencia y atribución.
+
+## GNCV — datos 2026
+
+`colombia-gncv-2026.json.gz` es una copia de 1.864 registros del conjunto oficial [Consulta Precios Promedio de Gas Natural Comprimido Vehicular](https://www.datos.gov.co/d/he3q-86dn), consultado el 24/11/2026. Se seleccionó el año 2026 de la API pública de Datos Abiertos. El catálogo indica CC BY-SA 4.0. El periodo más reciente publicado es noviembre de 2026 (154 filas nacionales, periodo en curso); 69 municipios tienen alguna observación en el año. La copia conserva los campos de procedencia; los precios son promedios mensuales por estación en COP/m³. Las coordenadas de origen representan municipios y se descartan del modelo espacial. La lista municipal incluye la unión de ambas fuentes.

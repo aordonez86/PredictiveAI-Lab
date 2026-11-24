@@ -8,7 +8,7 @@ export function demoStations(fuel: Fuel): Observation[] {
     cityCode: "11001",
     brand: "Demo",
     fuel,
-    price: 16000 - n * 300,
+    price: fuel === "gncv" ? 3800 - n * 100 : 16000 - n * 300,
     date: "2026-11-24",
     kind: "demo",
     source: "Datos sintéticos",
