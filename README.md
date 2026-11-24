@@ -51,3 +51,9 @@ PredictiveAI-Lab/
 I’m **Alejandro Ordóñez Ocaña**, a mathematician in training (Universidad El Bosque, Bogotá) and researcher in applied AI.  
 My interests combine **mathematics, data science, and real-world AI applications** across diverse domains.  
 
+
+## Applied intelligence projects
+
+| Project | Domain | Methods | Status |
+| --- | --- | --- | --- |
+| [Tanquea Mejor](tanquea-mejor/) | Mobility and household economics | Open-data validation, geospatial analysis, historical price comparison, cost optimization | MVP |

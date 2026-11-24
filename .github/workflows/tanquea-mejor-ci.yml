@@ -1,0 +1,30 @@
+name: Tanquea Mejor CI
+on:
+  push:
+    paths:
+      - 'tanquea-mejor/**'
+      - '.github/workflows/tanquea-mejor-ci.yml'
+  pull_request:
+    paths:
+      - 'tanquea-mejor/**'
+      - '.github/workflows/tanquea-mejor-ci.yml'
+permissions:
+  contents: read
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: tanquea-mejor
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+          cache-dependency-path: tanquea-mejor/package-lock.json
+      - run: npm ci
+      - run: npm run lint
+      - run: npm run typecheck
+      - run: npm test
+      - run: npm run build
