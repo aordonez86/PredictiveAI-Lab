@@ -57,3 +57,4 @@ My interests combine **mathematics, data science, and real-world AI applications
 | Project | Domain | Methods | Status |
 | --- | --- | --- | --- |
 | [Tanquea Mejor](tanquea-mejor/) | Mobility and household economics | Open-data validation, geospatial analysis, 2026 regulatory references, historical and monthly price comparison, route-cost optimization | MVP v0.2.0 |
+| [Sentinel Bogotá](sentinel-bogota/) | Public safety and community services | Citywide statistical indicators, survey comparison, data quality, reproducible reporting | MVP v0.1.0 |

@@ -1,0 +1,22 @@
+name: Sentinel Bogotá CI
+on:
+  push:
+    paths: ['sentinel-bogota/**', '.github/workflows/sentinel-bogota-ci.yml']
+  pull_request:
+    paths: ['sentinel-bogota/**']
+permissions:
+  contents: read
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: sentinel-bogota
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: python -m unittest discover -s tests -v
+      - run: python build_report.py
+      - run: git diff --exit-code -- dist/index.html
