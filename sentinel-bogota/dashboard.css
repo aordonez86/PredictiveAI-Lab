@@ -1,0 +1,53 @@
+:root{color-scheme:dark;--bg:#0d1215;--panel:#121a1f;--line:#314047;--text:#d9e2df;--muted:#93a4a9;--accent:#e6ae64;--cyan:#a7d0d2}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;background:var(--bg);color:var(--text);font:15px/1.55 "Courier New",Courier,monospace}
+main{max-width:1440px;margin:auto;padding:24px 28px 44px}
+header{display:grid;grid-template-columns:1fr auto;align-items:end;gap:16px;border-bottom:1px solid var(--line);padding:16px 0 22px}
+header h1{font-size:clamp(25px,4vw,44px);letter-spacing:-.055em;line-height:1.1;margin:0;font-weight:700;text-transform:uppercase}
+header p{margin:6px 0 0;color:var(--muted)}
+header .date{color:var(--accent);text-align:right;font-size:12px}
+nav{display:flex;gap:24px;flex-wrap:wrap;border-bottom:1px solid var(--line);padding:13px 0;margin-bottom:20px}
+nav a{font-size:13px;text-transform:uppercase;text-decoration:none;letter-spacing:.06em;color:var(--muted)}
+nav a:hover,nav a:focus-visible{color:var(--accent)}
+h2{font-size:15px;letter-spacing:.06em;text-transform:uppercase;font-weight:700;color:var(--accent);margin:26px 0 12px}
+h3{margin:0 0 10px;font-size:15px}
+p{margin:10px 0}
+small,.muted{color:var(--muted);font-size:13px}
+section,article{background:var(--panel);border:1px solid var(--line);padding:20px}
+.cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:10px}
+.cards article h3{min-height:42px;color:var(--muted);font-weight:400}
+.number{font-size:34px;color:var(--cyan);font-weight:bold;margin:8px 0 0;letter-spacing:-.05em}
+.cards p:not(.number){font-size:13px;color:var(--muted)}
+.track{height:3px;background:var(--line);margin-top:15px}
+.track span{display:block;height:100%;background:var(--cyan)}
+table{width:100%;border-collapse:collapse;text-align:left}
+td,th{border-bottom:1px solid var(--line);padding:12px 9px}
+th{font-size:12px;color:var(--muted);font-weight:400;text-transform:uppercase}
+td:nth-child(2){font-variant-numeric:tabular-nums}
+a{color:var(--cyan);text-underline-offset:3px}
+:focus-visible{outline:2px solid var(--accent);outline-offset:3px}
+.table-wrap{overflow-x:auto}
+.territory-grid{display:grid;grid-template-columns:minmax(0,1.2fr) minmax(0,1fr);gap:20px}
+.map-shell{background:#0b1114;border:1px solid var(--line);padding:4px;text-align:center;position:relative}
+.map-shell svg{max-height:530px;width:100%;display:block}
+.map-shell path{cursor:pointer;transition:fill .15s,stroke .15s}
+.map-shell path:focus,.map-shell path:hover{stroke:var(--accent);stroke-width:2.6;outline:none}
+.legend{display:flex;gap:5px;flex-wrap:wrap;margin:10px 0;font-size:12px}
+.legend span{padding:4px 6px;border:1px solid var(--line)}
+.control{display:flex;flex-direction:column;gap:6px;margin-bottom:14px;color:var(--muted);font-size:13px}
+.control select,.control input{padding:10px;font:inherit;color:var(--text);border:1px solid #43535a;background:#11191d;border-radius:0;width:100%}
+.comparison{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.comparison article{background:#0e161a;padding:12px}
+.comparison strong{font-size:25px;display:block;color:var(--cyan)}
+.comparison p,.subtle{color:var(--muted);font-size:13px}
+.trend-top{display:flex;justify-content:space-between;gap:12px;align-items:start}
+.correlation{text-align:right;white-space:nowrap}
+.correlation strong{font-size:30px;color:var(--accent);display:block}
+.chart-key{display:flex;gap:22px;flex-wrap:wrap;font-size:13px}
+.amber{color:var(--accent)}.cyan{color:var(--cyan)}
+.trend-chart{width:100%;max-height:340px;margin:14px 0}
+.trend-chart text{fill:var(--muted);font-size:11px}
+details{border-top:1px solid var(--line);padding-top:12px;margin-top:12px}summary{cursor:pointer;color:var(--cyan)}
+footer{border-top:1px solid var(--line);margin-top:30px;padding-top:15px;color:var(--muted);font-size:12px}
+@media(max-width:750px){main{padding:16px}header{grid-template-columns:1fr}.date{text-align:left!important}.territory-grid{grid-template-columns:1fr}.comparison{grid-template-columns:1fr}section,article{padding:14px}}

@@ -3,6 +3,7 @@ import unittest
 from pathlib import Path
 from build_report import ROOT, build, load_indicators, survey_changes
 from locality_view import load_localities, render
+from trends import load_history, correlation
 
 class ReportTests(unittest.TestCase):
     def test_verified_rows(self):
@@ -30,6 +31,11 @@ class ReportTests(unittest.TestCase):
         self.assertEqual(rows["USAQUEN"]["2025"], 63.6)
         self.assertIsNone(rows["SUMAPAZ"]["2025"])
         self.assertEqual(render().count("data-locality=\""), 20)
+
+    def test_citywide_correlation(self):
+        rows = load_history()
+        self.assertEqual(len(rows), 11)
+        self.assertAlmostEqual(correlation(rows), 0.52137516)
 
     def test_output_has_sources(self):
         report = build(load_indicators(ROOT / "data" / "indicators.csv"))

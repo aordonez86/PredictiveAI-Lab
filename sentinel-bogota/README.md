@@ -37,3 +37,7 @@ Reutilización de código pendiente de selección de licencia por el mantenedor.
 ## Comparación territorial 0.2.0
 
 Mapa coroplético histórico de percepción ciudadana por localidad, selector 2024/2025 y comparación de dos localidades. La consulta textual de barrios informa la ausencia de datos a esa escala. La geometría administrativa se atribuye a SDP, CC BY 4.0.
+
+## Versión 0.3.0
+
+Interfaz monoespaciada oscura, mapa prioritario, indicadores compactos y series históricas de toda la ciudad. Correlación descriptiva de victimización y percepción (11 años), con datos y fuente visibles.
