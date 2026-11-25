@@ -33,3 +33,7 @@ Abrir `dist/index.html` en el navegador. El reporte es autocontenido.
 - [Política de publicación](docs/PUBLICATION.md)
 
 Reutilización de código pendiente de selección de licencia por el mantenedor. Las fuentes conservan sus propias condiciones. Los datos incluidos son pequeñas estadísticas publicadas, con atribución y enlaces a los originales.
+
+## Comparación territorial 0.2.0
+
+Mapa coroplético histórico de percepción ciudadana por localidad, selector 2024/2025 y comparación de dos localidades. La consulta textual de barrios informa la ausencia de datos a esa escala. La geometría administrativa se atribuye a SDP, CC BY 4.0.

@@ -31,7 +31,7 @@ Clave lógica: entidad, indicador, periodo inicial/final y unidad. El denominado
 2. Validar esquema, tipos, rango de porcentajes, coherencia temporal, claves duplicadas, compatibilidad de periodos y categorías. Preservar originales autorizados y registrar transformaciones.
 3. Comparar ventanas equivalentes. En porcentajes, informar diferencia en puntos porcentuales; en conteos comparables, calcular cambio relativo con denominador previo positivo. Distinguir series de encuesta de registros.
 4. Para una serie futura con conteo anual agregado n y población residente N de idéntico periodo y cobertura, tasa por 100.000 = 100000 n/N. Las proyecciones demográficas tienen incertidumbre; la movilidad hace que residentes no equivalgan a exposición.
-5. El análisis espacial de servicios comunitarios puede utilizar límites administrativos y cobertura poblacional, con versionado y análisis de sensibilidad al MAUP. El producto público conserva métricas de seguridad a nivel ciudad y no cruza ubicaciones precisas con tiempos, modalidades o recursos operativos.
+5. El análisis espacial de servicios comunitarios puede utilizar límites administrativos y cobertura poblacional, con versionado y análisis de sensibilidad al MAUP. El producto conserva estadísticas administrativas de seguridad a nivel ciudad y ofrece percepción histórica agregada por localidad.
 6. Evaluación de tendencia: comparar periodos completos, cuantificar variación y distinguir cambios de definición y revisión. Para encuestas, usar errores estándar, ponderaciones y diseño muestral de la entidad. Sin esos insumos, no declarar significancia.
 7. Evaluación predictiva de datos agregados: validar series históricas suficientemente largas y documentar incertidumbre antes de cualquier estudio de escenarios. El prototipo no entrena pronósticos delictivos; la comparación de modelos puede practicarse con series sintéticas de demanda de servicios comunitarios, usando una referencia de persistencia y validación temporal retrospectiva. Medir MAE y cobertura de intervalos, revisar deriva y comparar frente a la referencia. No publicar resultados de modelos sin evidencia.
 
@@ -70,3 +70,7 @@ La salida HTML muestra las cifras oficiales seleccionadas de 2024, 2025 y enero�
 Validación automática: claves únicas, intervalos válidos, fuente y unidad previstas, porcentajes válidos, comparación anual y salida reproducible. Prueba de revisión humana: el lector distingue percepción de victimización, cambio relativo de puntos porcentuales y periodo de publicación de periodo observado.
 
 Antes de ampliar: ¿qué cuadros agregados tienen cobertura continua, qué definiciones cambiaron, cuáles son definitivos, qué denominadores y errores estándar están disponibles, qué licencia autoriza publicación y quién asumirá revisión institucional?
+
+## Actualización 0.2.0
+
+La vista territorial compara dos localidades y año 2024/2025 usando la encuesta pública CCB. Se emplea una escala fija de porcentaje y ausencia de dato explícita. La consulta de barrio no asigna el valor de una localidad como medición del barrio.

@@ -22,3 +22,8 @@ La fuente más reciente por **publicación** entre los balances verificados es e
 Los seis valores CCB corresponden a estimaciones difundidas en el comunicado, no a conteos administrativos. La incorporación de Sumapaz en 2025 puede afectar comparabilidad. Los tres cambios SDSCJ comparan ventanas equivalentes; no permiten reconstruir conteos absolutos ni tasas. Se conserva la fecha de publicación, no se presume fecha de denuncia o registro individual. La variación y el redondeo corresponden a las publicaciones originales.
 
 Se requiere una serie oficial agregada con denominadores, definiciones estables, fecha de corte, revisiones y metadatos para cuantificar incertidumbre. No se calculan tasas poblacionales a partir de los porcentajes publicados.
+
+## Comparación territorial (25/11/2026)
+
+- CCB, [EPV 2025 desagregación por localidades](https://bibliotecadigital.ccb.org.co/items/6bfdcdc8-8641-48ef-ac20-6e6fe6030f04). Se transcriben los valores publicados en el gráfico comparativo “Percepción de barrio seguro, según localidad donde vive” (2024–2025). El gráfico posterior de mapa contiene valores diferentes y no se usa para alimentar esta vista. Sumapaz no figura en la tabla comparativa y se representa sin dato. El valor corresponde a la localidad de residencia del encuestado y no a una medición por barrio.
+- SDP, [Localidad Bogotá D.C.](https://datosabiertos.bogota.gov.co/dataset/localidad-bogota-d-c), licencia CC BY 4.0. Catálogo consultado 25/11/2026, metadatos modificados 28/02/2023, fecha de vigencia geométrica no comprobada. Archivo de 20 polígonos ESRI JSON en MAGNA-SIRGAS (EPSG:4686), simplificados para visualización y normalizados por nombre. Se conservan códigos administrativos. No contiene hechos delictivos.

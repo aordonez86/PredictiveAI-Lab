@@ -6,6 +6,7 @@ import html
 import math
 from datetime import date
 from pathlib import Path
+from locality_view import render
 
 ROOT = Path(__file__).resolve().parent
 SOURCES = {
@@ -55,7 +56,8 @@ def build(rows: list[dict]) -> str:
 <header><small>OBSERVATORIO ESTADÍSTICO · BOGOTÁ D.C.</small><h1>Sentinel Bogotá</h1><p>Seguridad, convivencia y percepción ciudadana</p><small>Fuentes consultadas el 25 de noviembre de 2026</small></header>
 <h2>Encuesta de percepción y victimización</h2><div class="cards">{cards}</div><p>Fuente: <a href="{SOURCES["CCB"]}">CCB, encuesta 2025 (publicada el 17/02/2026)</a>. Las diferencias se expresan en puntos porcentuales. La cobertura de 2025 incorporó Sumapaz.</p>
 <h2>Variación de delitos registrados en toda Bogotá</h2><section class="table-wrap"><table><thead><tr><th>Indicador</th><th>Cambio relativo</th><th>Periodo</th></tr></thead><tbody>{changes}</tbody></table><p>Comparación enero–septiembre de 2026 frente a los mismos meses de 2025. Fuente: <a href="{SOURCES["SDSCJ"]}">SDSCJ / Portal Bogotá, 15/10/2026</a>.</p></section>
-<h2>Cómo interpretar los indicadores</h2><section><p>Las denuncias y las estimaciones de encuestas reflejan fenómenos de medición distintos. Las variaciones publicadas no demuestran causalidad. Los datos pueden revisarse; las cifras de periodos diferentes requieren comparabilidad documentada.</p><p>Los intervalos de confianza y las tasas poblacionales requieren denominadores y documentación estadística adicional.</p></section><footer>Sentinel Bogotá · Proyecto 002 · MVP 0.1.0</footer></main></html>"""
+{render()}
+<h2>Cómo interpretar los indicadores</h2><section><p>Las denuncias y las estimaciones de encuestas reflejan fenómenos de medición distintos. Las variaciones publicadas no demuestran causalidad. Los datos pueden revisarse; las cifras de periodos diferentes requieren comparabilidad documentada.</p><p>Los intervalos de confianza y las tasas poblacionales requieren denominadores y documentación estadística adicional.</p></section><footer>Sentinel Bogotá · Proyecto 002 · MVP 0.2.0</footer></main></html>"""
 
 if __name__ == "__main__":
     rows = load_indicators(ROOT / "data" / "indicators.csv")

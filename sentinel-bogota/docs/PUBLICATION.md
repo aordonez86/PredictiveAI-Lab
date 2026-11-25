@@ -1,6 +1,6 @@
 # Política de publicación
 
-El tablero publica estadísticas históricas de toda Bogotá y proporciones agregadas de encuestas. Prioriza la prevención comunitaria, la evaluación de servicios y la transparencia.
+El tablero publica estadísticas históricas de toda Bogotá y proporciones agregadas de encuestas por localidad. Prioriza la prevención comunitaria, la evaluación de servicios y la transparencia.
 
 - No recopilar identificadores, direcciones personales ni coordenadas de eventos.
 - No generar alertas de ubicación, pronósticos delictivos locales ni clasificaciones de zonas según vulnerabilidad.
