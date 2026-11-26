@@ -1,0 +1,182 @@
+<!doctype html><html lang="es"><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Bitácora de Aseo Urbano</title>
+<style>
+*{box-sizing:border-box}body{background:#111619;color:#e7e7df;font:16px/1.55 ui-monospace,"Courier New",monospace;margin:0}main{max-width:880px;margin:auto;padding:clamp(16px,5vw,60px)}h1{font-size:clamp(26px,5vw,43px);line-height:1.08;margin:10px 0}h2{font-size:20px}section{border-top:1px solid #546067;padding:16px 0}label{display:block;margin:8px 0}small,p{color:#cad0cd}strong,output{color:#ffd18d}button,input,select,textarea{font:inherit;padding:7px;background:#1a252a;color:#fff;border:1px solid #839393;max-width:100%}button,summary{cursor:pointer}textarea{width:100%;height:12em}a{color:#ade9e4}:focus-visible{outline:3px solid #ffcc82}li{margin:7px 0;overflow-wrap:anywhere}footer{margin-top:22px}#error{color:#ffbaab}
+</style><main><header><small>Operaciones de aseo urbano · Bogotá</small><h1>Bitácora de Aseo Urbano</h1><p>Reconstruya un episodio y estime cuántos despachos adicionales tendría que evitar una medida preventiva.</p><strong id="origin"></strong></header>
+<section><h2>Estado a los siete días</h2><p id="summary"></p><p id="bounds"></p></section>
+<section><h2>Bitácora del punto</h2><label>Punto <select id="point"></select></label><p id="verdict"></p><ol id="log"></ol></section>
+<section><h2>Punto de equilibrio</h2><p>Use el mismo periodo para todos los costos. Los valores iniciales son ilustrativos.</p>
+<label>Prevención (COP) <input id="prevention" type="number" min="0" value="180000"></label><label>Seguimiento adicional (COP) <input id="inspection" type="number" min="0" value="60000"></label><label>Costo variable por despacho extraordinario (COP) <input id="trip" type="number" min="1" value="80000"></label><output id="result" aria-live="polite"></output></section>
+<section><details><summary>Cargar o editar una bitácora</summary><p>El archivo se procesa en este dispositivo. Use identificadores anónimos y referencias breves a fichas. El ejemplo también sirve como plantilla.</p><label>Archivo JSON <input type="file" accept=".json,application/json" id="file"></label><label>Contenido JSON<textarea id="editor" spellcheck="false"></textarea></label><button id="apply">Aplicar bitácora</button> <button id="reset">Restaurar ejemplo</button><p id="error" role="status"></p></details></section><footer><small>Prototipo independiente para evaluar un piloto. Fechas en UTC.</small></footer></main>
+<script>"use strict";
+const DAY = 86400000;
+const clean = "limpio", waste = "residuos", unknown = "desconocido";
+const dispatch = "extraordinaria";
+const visitTypes = ["inspeccion", "programada", dispatch];
+function instant(value) {
+  if (typeof value !== "string" || !/^\d{4}-\d\d-\d\dT\d\d:\d\d:\d\dZ$/.test(value))
+    throw Error("Use fechas UTC con segundos (AAAA-MM-DDThh:mm:ssZ).");
+  const ms = Date.parse(value);
+  if (!Number.isFinite(ms) || new Date(ms).toISOString().replace(".000Z", "Z") !== value)
+    throw Error("Fecha de calendario inválida.");
+  return ms;
+}
+function requireLabel(value, name) {
+  if (typeof value !== "string" || !value.trim() || value.length > 120)
+    throw Error("Revise el campo " + name + " (1–120 caracteres).");
+}
+function analyze(data) {
+  if (!data || data.version !== 1 || !["sintetico", "operativo"].includes(data.origen))
+    throw Error("Se requieren version 1 y origen sintetico u operativo.");
+  const cutoff = instant(data.corte);
+  if (!Array.isArray(data.casos) || data.casos.length > 1000) throw Error("Máximo 1000 casos.");
+  const ids = new Set();
+  const rows = data.casos.map(c => {
+    requireLabel(c?.punto, "punto");
+    if (ids.has(c.punto)) throw Error("Se admite un episodio por punto en cada lote.");
+    ids.add(c.punto);
+    requireLabel(c.fuente, "fuente del cierre limpio");
+    const start = instant(c.cierre);
+    if (start > cutoff || !Array.isArray(c.visitas) || c.visitas.length > 500)
+      throw Error("Revise el cierre y la lista de visitas.");
+    let previous = start, lastClean = start, active = true, interval = null, interrupted = false;
+    let daySeven = null, extra = 0;
+    for (const v of c.visitas) {
+      const time = instant(v.hora);
+      if (time <= previous || time > cutoff) throw Error("Las visitas deben ser posteriores, únicas, ordenadas y anteriores o iguales al corte.");
+      previous = time;
+      if (!visitTypes.includes(v.tipo) || ![clean, waste, unknown].includes(v.antes))
+        throw Error("Tipo de visita o estado previo desconocido.");
+      requireLabel(v.fuente, "fuente de visita");
+      if (v.tipo === dispatch) extra++;
+      if (!active) continue;
+      if (time === start + 7 * DAY && v.antes !== unknown) daySeven = v.antes;
+      if (!interval && v.antes === waste) interval = [lastClean, time];
+      if (v.antes === clean) lastClean = time;
+      if (v.tipo !== "inspeccion") {
+        interrupted = !interval;
+        active = false;
+      }
+    }
+    return {id:c.punto, start, interval, interrupted, daySeven, extra,
+      eligible:cutoff >= start + 7 * DAY, visits:c.visitas, source:c.fuente};
+  });
+  const eligible = rows.filter(r => r.eligible);
+  const n = eligible.length, seen = eligible.filter(r => r.daySeven !== null).length;
+  const positive = eligible.filter(r => r.daySeven === waste).length;
+  return {rows, n, seen, positive, bounds:n ? [positive/n, (positive+n-seen)/n] : null};
+}
+function breakEven(prevention, inspection, trip) {
+  const costs = [prevention, inspection, trip];
+  if (!costs.every(x => Number.isSafeInteger(x) && x >= 0 && x <= 1e12) || trip === 0)
+    throw Error("Ingrese costos enteros en COP entre 0 y un billón y un costo por despacho mayor que cero.");
+  return Math.ceil((prevention + inspection) / trip);
+}
+if (typeof module !== "undefined") module.exports = {analyze, breakEven, instant, DAY};
+</script><script>const demo = {
+  "version": 1,
+  "origen": "sintetico",
+  "corte": "2026-11-20T15:00:00Z",
+  "casos": [
+    {
+      "punto": "DEMO-01",
+      "cierre": "2026-11-01T15:00:00Z",
+      "fuente": "Cierre limpio simulado",
+      "visitas": [
+        {
+          "hora": "2026-11-04T15:00:00Z",
+          "tipo": "inspeccion",
+          "antes": "limpio",
+          "fuente": "Ficha simulada 4"
+        },
+        {
+          "hora": "2026-11-08T15:00:00Z",
+          "tipo": "extraordinaria",
+          "antes": "residuos",
+          "fuente": "Ficha simulada 8"
+        }
+      ]
+    },
+    {
+      "punto": "DEMO-02",
+      "cierre": "2026-11-01T15:00:00Z",
+      "fuente": "Cierre limpio simulado",
+      "visitas": [
+        {
+          "hora": "2026-11-08T15:00:00Z",
+          "tipo": "inspeccion",
+          "antes": "limpio",
+          "fuente": "Ficha simulada 8"
+        }
+      ]
+    },
+    {
+      "punto": "DEMO-03",
+      "cierre": "2026-11-01T15:00:00Z",
+      "fuente": "Cierre limpio simulado",
+      "visitas": [
+        {
+          "hora": "2026-11-05T15:00:00Z",
+          "tipo": "programada",
+          "antes": "desconocido",
+          "fuente": "Ficha simulada 5"
+        },
+        {
+          "hora": "2026-11-08T15:00:00Z",
+          "tipo": "inspeccion",
+          "antes": "limpio",
+          "fuente": "Ficha simulada 8"
+        }
+      ]
+    },
+    {
+      "punto": "DEMO-04",
+      "cierre": "2026-11-01T15:00:00Z",
+      "fuente": "Cierre limpio simulado",
+      "visitas": []
+    },
+    {
+      "punto": "DEMO-05",
+      "cierre": "2026-11-18T15:00:00Z",
+      "fuente": "Cierre limpio simulado",
+      "visitas": []
+    }
+  ]
+}
+;
+const el = id => document.getElementById(id);
+const fmt = x => (100*x).toLocaleString("es-CO",{maximumFractionDigits:1})+" %";
+const stamp = ms => new Date(ms).toISOString().replace(".000Z","Z");
+let report;
+function detail() {
+  const r = report.rows[el("point").selectedIndex];
+  el("log").replaceChildren();
+  if (!r) {el("verdict").textContent="Sin episodios.";return;}
+  el("verdict").textContent = r.interval ? "Primera reaparición observada entre "+stamp(r.interval[0])+" (excluido) y "+stamp(r.interval[1])+" (incluido)." :
+    r.interrupted ? "Seguimiento interrumpido por otra limpieza. Duración indeterminada." : "Sin reaparición documentada hasta la última observación.";
+  const entries = [stamp(r.start)+" · cierre limpio · "+r.source,
+    ...r.visits.map(v=>v.hora+" · "+v.tipo+" · antes: "+v.antes+" · "+v.fuente)];
+  for (const entry of entries) {const li=document.createElement("li");li.textContent=entry;el("log").append(li);}
+}
+function applyData(data) {
+  report=analyze(data);
+  el("origin").textContent=(data.origen==="sintetico"?"DEMOSTRACIÓN · datos sintéticos":"Bitácora importada · origen operativo declarado por el usuario")+" · corte "+data.corte;
+  const {n,seen,positive,bounds}=report;
+  el("summary").textContent=n+" puntos con siete días cumplidos · "+seen+" con estado conocido · "+positive+" con residuos observados.";
+  el("bounds").textContent=bounds ? "Entre los observados: "+(seen?fmt(positive/seen):"sin observaciones")+". Entre todos los elegibles: "+fmt(bounds[0])+" a "+fmt(bounds[1])+" según el estado de los faltantes." : "El corte todavía no incluye episodios elegibles.";
+  el("point").replaceChildren(...report.rows.map(r=>new Option(r.id,r.id)));
+  detail();
+}
+function calc() {
+  try {const costs=["prevention","inspection","trip"].map(id=>el(id).valueAsNumber);
+    el("result").textContent=breakEven(...costs)+" despachos extraordinarios evitados cubrirían el costo adicional.";}
+  catch(e){el("result").textContent=e.message;}
+}
+function reset(){el("editor").value=JSON.stringify(demo,null,2);applyData(demo);el("error").textContent="";el("file").value="";}
+function submit(){try{if(el("editor").value.length>2000000)throw Error("Máximo 2 MB.");applyData(JSON.parse(el("editor").value));el("error").textContent="Bitácora aplicada.";}
+  catch(e){el("error").textContent="Se conserva la bitácora anterior. "+e.message;}}
+el("file").onchange=async()=>{try{const f=el("file").files[0];if(!f)return;if(f.size>2000000)throw Error("Máximo 2 MB.");el("editor").value=await f.text();submit();}catch(e){el("error").textContent=e.message;}};
+el("apply").onclick=submit;el("reset").onclick=reset;el("point").onchange=detail;
+for(const id of ["prevention","inspection","trip"])el(id).oninput=calc;
+reset();calc();
+</script></html>

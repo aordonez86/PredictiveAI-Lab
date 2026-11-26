@@ -1,0 +1,70 @@
+{
+  "version": 1,
+  "origen": "sintetico",
+  "corte": "2026-11-20T15:00:00Z",
+  "casos": [
+    {
+      "punto": "DEMO-01",
+      "cierre": "2026-11-01T15:00:00Z",
+      "fuente": "Cierre limpio simulado",
+      "visitas": [
+        {
+          "hora": "2026-11-04T15:00:00Z",
+          "tipo": "inspeccion",
+          "antes": "limpio",
+          "fuente": "Ficha simulada 4"
+        },
+        {
+          "hora": "2026-11-08T15:00:00Z",
+          "tipo": "extraordinaria",
+          "antes": "residuos",
+          "fuente": "Ficha simulada 8"
+        }
+      ]
+    },
+    {
+      "punto": "DEMO-02",
+      "cierre": "2026-11-01T15:00:00Z",
+      "fuente": "Cierre limpio simulado",
+      "visitas": [
+        {
+          "hora": "2026-11-08T15:00:00Z",
+          "tipo": "inspeccion",
+          "antes": "limpio",
+          "fuente": "Ficha simulada 8"
+        }
+      ]
+    },
+    {
+      "punto": "DEMO-03",
+      "cierre": "2026-11-01T15:00:00Z",
+      "fuente": "Cierre limpio simulado",
+      "visitas": [
+        {
+          "hora": "2026-11-05T15:00:00Z",
+          "tipo": "programada",
+          "antes": "desconocido",
+          "fuente": "Ficha simulada 5"
+        },
+        {
+          "hora": "2026-11-08T15:00:00Z",
+          "tipo": "inspeccion",
+          "antes": "limpio",
+          "fuente": "Ficha simulada 8"
+        }
+      ]
+    },
+    {
+      "punto": "DEMO-04",
+      "cierre": "2026-11-01T15:00:00Z",
+      "fuente": "Cierre limpio simulado",
+      "visitas": []
+    },
+    {
+      "punto": "DEMO-05",
+      "cierre": "2026-11-18T15:00:00Z",
+      "fuente": "Cierre limpio simulado",
+      "visitas": []
+    }
+  ]
+}
