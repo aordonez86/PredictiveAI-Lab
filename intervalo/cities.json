@@ -1,0 +1,9 @@
+{
+  "bogota": {
+    "name": "Bogotá",
+    "operator": "TRANSMILENIO S.A.",
+    "timezone": "America/Bogota",
+    "schedule": "https://gtfs.transmilenio.gov.co/GTFS.zip",
+    "updates": "https://gtfs.transmilenio.gov.co/tripupdates.pb"
+  }
+}

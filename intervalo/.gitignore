@@ -1,0 +1,5 @@
+*.sqlite
+*.pb
+*.zip
+.venv/
+__pycache__/
