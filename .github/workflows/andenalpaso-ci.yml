@@ -1,9 +1,9 @@
-name: Intervalo checks
+name: Andén al Paso checks
 on:
   push:
-    paths: ['intervalo/**', '.github/workflows/intervalo-ci.yml']
+    paths: ['andenalpaso/**', '.github/workflows/andenalpaso-ci.yml']
   pull_request:
-    paths: ['intervalo/**', '.github/workflows/intervalo-ci.yml']
+    paths: ['andenalpaso/**', '.github/workflows/andenalpaso-ci.yml']
 permissions:
   contents: read
 jobs:
@@ -11,7 +11,7 @@ jobs:
     runs-on: ubuntu-latest
     defaults:
       run:
-        working-directory: intervalo
+        working-directory: andenalpaso
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5

@@ -118,6 +118,11 @@ def build(source, target):
                 ),
             )
             db.execute("CREATE INDEX arrivals_by_stop ON arrivals(stop,t)")
+            db.executescript("""
+                CREATE TABLE route_stops AS SELECT DISTINCT trips.route,arrivals.stop
+                FROM arrivals JOIN trips ON trips.id=arrivals.trip;
+                CREATE UNIQUE INDEX route_stop ON route_stops(route,stop);
+            """)
         os.replace(path, target)
     finally:
         Path(path).unlink(missing_ok=True)

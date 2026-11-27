@@ -63,6 +63,7 @@ class Predictions(unittest.TestCase):
             build(src, target)
             with sqlite3.connect(target) as db:
                 rows = board(db, "s", zone, (0, {}, "offline"), now)["rows"]
+                self.assertEqual(board(db,"s",zone,(0,{},"offline"),now,"other")["rows"],[])
                 self.assertEqual(
                     [(r["at"], r["platform"]) for r in rows], [(now + 300, "p")]
                 )

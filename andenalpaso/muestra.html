@@ -1,0 +1,322 @@
+<!doctype html>
+<html lang="es">
+  <meta charset="utf-8" /><meta
+    name="viewport"
+    content="width=device-width,initial-scale=1"
+  /><title>Andén al Paso · Rutas y paraderos</title>
+  <style>
+    :root {
+      color-scheme: dark;
+    }
+    * {
+      box-sizing: border-box;
+    }
+    body {
+      background: #101615;
+      color: #eceee8;
+      font:
+        16px/1.55 ui-monospace,
+        "Courier New",
+        monospace;
+      margin: 0;
+    }
+    main {
+      max-width: 820px;
+      margin: auto;
+      padding: clamp(18px, 5vw, 60px);
+    }
+    h1 {
+      font-size: clamp(42px, 8vw, 70px);
+      line-height: 1;
+      margin: 0.3em 0;
+    }
+    h2 {
+      font-size: 22px;
+    }
+    section {
+      margin-top: 26px;
+      border-top: 1px solid #66746e;
+    }
+    label,
+    small {
+      display: block;
+    }
+    small,
+    p {
+      color: #c3d1cb;
+    }
+    label {
+      margin: 12px 0;
+    }
+    input,
+    select,
+    button {
+      font: inherit;
+      padding: 7px;
+      max-width: 100%;
+      background: #1c2622;
+      color: inherit;
+      border: 1px solid #79877e;
+    }
+    button {
+      cursor: pointer;
+    }
+    button:focus-visible,
+    input:focus-visible,
+    select:focus-visible {
+      outline: 3px solid #ffcf87;
+    }
+    strong,
+    output {
+      color: #f8d08e;
+    }
+    li {
+      margin: 0.6em 0;
+    }
+    table {
+      border-collapse: collapse;
+      width: 100%;
+      font-size: clamp(12px, 2vw, 16px);
+    }
+    td,
+    th {
+      text-align: left;
+      padding: 6px;
+      border-bottom: 1px solid #47534e;
+    }
+    [hidden] {display:none} header small {letter-spacing:.12em;color:#c6d3c9} h1 {letter-spacing:-.065em}
+    .pair {display:grid;grid-template-columns:2fr 3fr;gap:1rem}
+    label input,label select {width:100%;min-height:44px;display:block;margin-top:5px}
+    button {min-height:44px} #report {background:#f0cf98;color:#18221e}
+    button:disabled {opacity:.55} @media(max-width:600px){.pair{grid-template-columns:1fr;gap:0}}
+  </style>
+  <main>
+    <header><small>MOVILIDAD / TRANSPORTE PÚBLICO</small><h1>Andén al Paso</h1></header>
+    <section><h2>¿Qué ruta vas a tomar?</h2><p id="mode" role="status"></p><label id="cityLabel" hidden>Ciudad<select id="city"></select></label>
+      <div class="pair"><label>Buscar ruta<input id="rq" type="search" placeholder="Código o destino"></label>
+      <label>Ruta y destino<select id="route"></select></label></div>
+      <div class="pair"><label>Filtrar paraderos<input id="sq" type="search" placeholder="Nombre o código"></label>
+      <label>Paradero de abordaje<select id="stop"></select></label></div>
+      <small id="matches" role="status"></small></section>
+    <section><h2>Próximas llegadas</h2><p id="status" role="status"></p><small id="source"></small><ol id="arrivals"></ol>
+      <button id="refresh">Actualizar consulta</button></section>
+    <section><h2>Avisos de pasajeros</h2><p>Si observas una novedad en este paradero, elige el aviso y confírmalo. Cada observación dura 30 minutos.</p>
+      <label>Tipo de aviso<select id="kind"><option>Demora</option><option>Bus lleno</option><option>Acceso obstruido</option><option>Paradero congestionado</option></select></label>
+      <button id="report">Lo estoy viendo</button><p role="status" id="feedback"></p><ul id="reports"></ul></section>
+    <section>
+      <h2>¿Qué cambia si los buses llegan juntos?</h2>
+      <p>
+        Simulación sintética de dos servicios con un intervalo promedio de 10
+        minutos. Los pasajeros llegan al azar. Ajusta la separación del primer
+        par de buses.
+      </p>
+      <label
+        >Primer intervalo del servicio B
+        <input id="gap" type="range" min="1" max="10" value="2" />
+        <output id="value"></output
+      ></label>
+      <table>
+        <thead>
+          <tr>
+            <th>Intervalos (min)</th>
+            <th>Espera media</th>
+            <th>P90</th>
+            <th>Simulada</th>
+          </tr>
+        </thead>
+        <tbody id="metrics"></tbody>
+      </table>
+      <small
+        >Minutos. P90 es la espera que el 90 % de pasajeros no supera.
+        Simulación con 20.000 pasajeros y semilla fija.</small
+      >
+    </section>
+  <footer><small>Extracto adaptado de
+        <a href="https://datosabiertos.bogota.gov.co/dataset/especificacion-gtfs-general-transport-feed-specification-sitp">TransMilenio</a>
+        bajo <a href="https://creativecommons.org/licenses/by-sa/4.0/">CC BY-SA 4.0</a>.</small></footer></main>
+  <script>// Passenger arrival times are uniform over a complete repeating cycle.
+function compareWait(gaps, count = 20000, seed = 42) {
+  if (!gaps.length || gaps.some((x) => !Number.isFinite(x) || x <= 0)) {
+    throw new Error("Los intervalos deben ser positivos.");
+  }
+  const cycle = gaps.reduce((a, b) => a + b, 0);
+  const mean = gaps.reduce((s, h) => s + h * h, 0) / (2 * cycle);
+  let low = 0,
+    high = Math.max(...gaps);
+  for (let i = 0; i < 50; i++) {
+    const middle = (low + high) / 2;
+    const cdf = gaps.reduce((s, h) => s + Math.min(h, middle), 0) / cycle;
+    if (cdf < 0.9) low = middle;
+    else high = middle;
+  }
+  let sum = 0;
+  for (let i = 0; i < count; i++) {
+    seed = (Math.imul(1664525, seed) + 1013904223) >>> 0;
+    let arrival = (seed / 4294967296) * cycle;
+    for (const gap of gaps) {
+      if (arrival < gap) {
+        sum += gap - arrival;
+        break;
+      }
+      arrival -= gap;
+    }
+  }
+  return { mean, p90: high, simulated: sum / count };
+}
+if (typeof module !== "undefined") module.exports = { compareWait };
+</script>
+  <script>
+    const el = (id) => document.getElementById(id);
+    function metrics() {
+      const g = Number(el("gap").value);
+      el("value").value = g + " min";
+      el("metrics").replaceChildren();
+      for (const [label, gaps] of [
+        ["A", [10, 10]],
+        ["B", [g, 20 - g]],
+      ]) {
+        const m = compareWait(gaps);
+        const tr = document.createElement("tr");
+        for (const v of [
+          label + " · " + gaps.join(" / "),
+          m.mean,
+          m.p90,
+          m.simulated,
+        ]) {
+          const td = document.createElement("td");
+          td.textContent =
+            typeof v === "number"
+              ? v.toLocaleString("es-CO", {
+                  minimumFractionDigits: 2,
+                  maximumFractionDigits: 2,
+                })
+              : v;
+          tr.append(td);
+        }
+        el("metrics").append(tr);
+      }
+    }
+    el("gap").oninput = metrics;
+    metrics();
+  </script>
+  <script>window.boardingSample={"routes": [["12819", "B23", "Alcal\u00e1"], ["12933", "B74", "Portal Norte"], ["10076", "D10", "Portal 80"], ["14097", "F32", "Portal Am\u00e9ricas"], ["14054", "H15", "Portal Tunal"], ["13027", "K86", "Aeropuerto ||  Portal ElDorado"], ["13040", "K86", "Aeropuerto ||  Portal ElDorado"]], "stops": {"12819": [["61149", "Alcal\u00e1 B - 4 \u00f3 6", "B010"], ["74244", "Av. 39 B - 4 \u00f3 6-T", "Av. 39 B - 4 \u00f3 6-T"], ["62309", "Av. Rojas A - 2 \u00f3 5", "DN240"], ["61858", "CAN B - 1 \u00f3 5", "K009"], ["61195", "Calle 127 B - 4 \u00f3 6", "B056"], ["74190", "Calle 26 A - 3 \u00f3 6.", "Calle 26 A - 3 \u00f3 6."], ["74431", "Calle 53 A - 4", "Calle 53 A - 4"], ["74108", "Calle 57 A - 4 \u00f3 6-T", "Calle 57 A - 4 \u00f3 6-T"], ["74308", "Calle 72 A - 4", "Calle 72 A - 4"], ["61165", "Calle 85 B - 4 \u00f3 6", "B026"], ["61873", "Ciudad Universitaria B - 2 \u00f3 5", "K024"], ["61901", "Concejo de Bogot\u00e1 B - 2 \u00f3 5", "K052"], ["61882", "El Tiempo - Maloka B - 1 \u00f3 5", "K033"], ["61886", "Gobernaci\u00f3n B - 1 \u00f3 5", "K037"], ["73234", "Portal Eldorado T-3B", "PA73234"], ["61245", "Prado A - 3", "B106"], ["61917", "Salitre - El Greco A - 2 \u00f3 5", "K068T"]], "12933": [["74212", "Av. 39 A - 4 \u00f3 6-T", "Av. 39 A - 4 \u00f3 6-T"], ["61203", "Calle 142 B - 4", "B064"], ["61207", "Calle 146 C - 4", "B068"], ["74192", "Calle 26 B - 4 \u00f3 6.", "Calle 26 B - 4 \u00f3 6."], ["74108", "Calle 57 A - 4 \u00f3 6-T", "Calle 57 A - 4 \u00f3 6-T"], ["61221", "H\u00e9roes C - 4", "B082"], ["61226", "Mazur\u00e9n B - 4", "B087"], ["61235", "Portal Norte T1", "B096"], ["61245", "Prado A - 3", "B106"], ["61252", "Tober\u00edn C - 4 \u00f3 6", "B113"], ["61919", "Universidades A - 4 \u00f3 6", "K070"], ["62040", "Virrey A - 4 \u00f3 6", "B130T"]], "10076": [["61141", "Alcal\u00e1 C - 2 \u00f3 5", "B002"], ["73415", "Av. 68 B - 4 \u00f3 6", "PA73415"], ["61475", "Av. Cali B - 4 \u00f3 6", "D006"], ["61479", "Boyac\u00e1 B - 4 \u00f3 6", "D010"], ["61169", "Calle 100 C - 2 \u00f3 5", "B030"], ["72907", "Calle 146 A - 2 \u00f3 5", "PA72907"], ["61157", "Calle 85 C - 2 \u00f3 5", "B018"], ["61483", "Cra. 47 B - 4 \u00f3 6", "D014"], ["61487", "Cra. 53 A - 4 \u00f3 6", "D018"], ["61501", "Cra. 90 A - 4 \u00f3 6", "D032"], ["61494", "Granja - Cra. 77 D - 4 \u00f3 6", "D025"], ["72908", "Mazur\u00e9n A - 2 \u00f3 5", "PA72908"], ["73225", "Portal 80 T-2", "PA73225"], ["61235", "Portal Norte T1", "B096"], ["72937", "Tober\u00edn A - 2 \u00f3 5", "PA72937T"]], "14097": [["61610", "7 de Agosto A - 2 \u00f3 5", "E078T"], ["61672", "Av. Am\u00e9ricas - Av. Boyac\u00e1 B - 4 \u00f3 6", "F057"], ["61539", "Av. Chile C - 2 \u00f3 5", "E007"], ["73536", "Av. El Dorado A - 1 \u00f3 5", "PA73536"], ["61626", "Banderas T5", "F011"], ["61554", "CAD A - 2 \u00f3 5", "E022"], ["62034", "NQS - Calle 75 A - 2 \u00f3 5", "E097"], ["74413", "Patio Bonito B - 4 \u00f3 6.", "Patio Bonito B - 4 \u00f3 6."], ["74467", "Portal Am\u00e9ricas T3.", "Portal Am\u00e9ricas T3."], ["61699", "Puente Aranda B - 4 \u00f3 6", "F084"], ["61709", "Tv. 86 A - 4 \u00f3 6", "F094"], ["61614", "U. Nacional A - 2 \u00f3 5", "E082"], ["61717", "Zona Industrial B - 4 \u00f3 6", "F102"]], "14054": [["74243", "Av. 39 B - 2 \u00f3 5-T", "Av. 39 B -2 \u00f3 5-T"], ["74183", "Av. Jim\u00e9nez A - 2 \u00f3 5-T", "Av. Jim\u00e9nez A - 2 \u00f3 5-T"], ["61453", "Av. Suba - Calle 116 A - 2 \u00f3 5", "C044"], ["74160", "Calle 22 B - 2 \u00f3 5-T", "Calle 22 B - 2 \u00f3 5-T"], ["61780", "Calle 40 S. A - 2 \u00f3 5", "H009"], ["74430", "Calle 53 A - 2", "Calle 53 A - 2"], ["74109", "Calle 57 A - 2 \u00f3 5-T", "Calle 57 A - 2 \u00f3 5-T"], ["74309", "Calle 72 B - 2", "Calle 72 B - 2"], ["74120", "Campi\u00f1a C - 1 \u00f3 5", "Campi\u00f1a C - 1 \u00f3 5"], ["61417", "Gratamira A - 2 \u00f3 5", "C008"], ["61420", "Humedal C\u00f3rdoba B - 1 \u00f3 5", "C011"], ["61794", "Nari\u00f1o B - 2 \u00f3 5", "H023"], ["61428", "Niza - Calle 127 B - 1 \u00f3 5", "C019"], ["74075", "Olaya A - 2 \u00f3 5-nw", "Olaya A - 2 \u00f3 5"], ["61803", "Parque A - 2 \u00f3 5", "H032"], ["74453", "Portal Suba T1.", "Portal Suba T1."], ["74419", "Portal Tunal T6.", "Portal Tunal T6."], ["61445", "Rionegro A - 2 \u00f3 5", "C036"], ["73575", "Suba - Tv. 91 D - 1 \u00f3 5", "PA73575"]], "13027": [["73770", "Aeron\u00e1utica Civil", "383A06_TM"], ["53014", "Aeropuerto Eldorado", "377B05_TM"], ["73769", "CAC", "382A06_TM"], ["52733", "CIAC", "194A05_TM"], ["73235", "Portal Eldorado T-3A", "PA73235"], ["73239", "Portal Eldorado T-6A", "PA73239"], ["53037", "Puente A\u00e9reo", "383A05_TM"], ["60140", "Puente A\u00e9reo", "380A05"]], "13040": [["73770", "Aeron\u00e1utica Civil", "383A06_TM"], ["53014", "Aeropuerto Eldorado", "377B05_TM"], ["73769", "CAC", "382A06_TM"], ["52733", "CIAC", "194A05_TM"], ["73235", "Portal Eldorado T-3A", "PA73235"], ["73239", "Portal Eldorado T-6A", "PA73239"], ["53037", "Puente A\u00e9reo", "383A05_TM"], ["60140", "Puente A\u00e9reo", "380A05"]]}, "source": "TransMilenio \u00b7 GTFS importado 2026-11-27 \u00b7 extracto de rutas y paraderos \u00b7 CC BY-SA 4.0"};</script>
+  <script>'use strict';
+(() => {
+  const field = id => document.getElementById(id);
+  const sample = window.boardingSample;
+  const localVotes = new Map();
+  let city = 'bogota';
+  let cities = {bogota:{name:'Bogotá',timezone:'America/Bogota',operator:'TransMilenio'}};
+  let catalogRevision=0;
+  const clock = zone => new Intl.DateTimeFormat('es-CO', {timeZone:zone,hour:'2-digit',minute:'2-digit',hourCycle:'h23'});
+  const labelTime = epoch => clock(cities[city].timezone).format(epoch*1000);
+  const norm = value => String(value ?? '').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase();
+  let routes=[], stops=[], selection=0, request=0;
+  async function api(path, args, post=false) {
+    const response=await fetch('/api/'+path+(post?'':'?'+new URLSearchParams(args)),
+      post ? {method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(args)} : {});
+    if (!response.ok) throw Error(response.status===429 ? 'Alcanzaste el límite temporal de avisos.' : 'La fuente no respondió. Vuelve a intentarlo.');
+    return response.json();
+  }
+  function choices(id, rows, filter, label) {
+    const select=field(id), prior=select.value, q=norm(field(filter).value.trim());
+    const matched=rows.filter(row=>row.some(value=>norm(value).includes(q)));
+    select.replaceChildren(...matched.map(row=>new Option(label(row),row[0])));
+    if(matched.some(row=>row[0]===prior)) select.value=prior;
+    select.disabled=!matched.length;
+    return matched.length;
+  }
+  function list(id, lines) {
+    field(id).replaceChildren(...lines.map(line=>{
+      const li=document.createElement('li'); li.textContent=line; return li;
+    }));
+  }
+  function scope(){return {city,route:field('route').value,stop:field('stop').value};}
+  function localRows(pair) {
+    return [...localVotes.values()].filter(v=>v.route===pair.route && v.stop===pair.stop && v.expires>Date.now()/1000);
+  }
+  function showReports(rows) {
+    list('reports',rows.length ? rows.map(r=>r.kind+' · '+r.count+' '+(r.count===1?'observación':'observaciones')+' · vence '+labelTime(r.expires)) : ['Sin avisos activos en esta selección.']);
+  }
+  async function refresh() {
+    const token=++request, pair=scope(), ready=Boolean(pair.route && pair.stop);
+    field('report').disabled=!ready;
+    field('refresh').disabled=false;
+    for(const id of ['reports','feedback','arrivals','source']) field(id).replaceChildren();
+    field('status').textContent=ready?'Consultando llegadas…':'Selecciona una ruta y un paradero.';
+    if(!ready) return;
+    if(sample){
+      field('status').textContent='Las llegadas se consultan en la versión conectada.';
+      field('source').textContent=sample.source; showReports(localRows(pair)); return;
+    }
+    api('alerts',pair).then(rows=>{if(token===request) showReports(rows);})
+      .catch(e=>{if(token===request) field('feedback').textContent=e.message;});
+    try {
+      const data=await api('board',pair);
+      if(token!==request) return;
+      field('source').textContent=cities[city].operator+' · consulta '+labelTime(data.now)+' · actualización operativa '+(data.feed?new Date(data.feed*1000).toISOString():'sin fecha disponible');
+      const fresh=data.feed && data.now>=data.feed && data.now-data.feed<=180;
+      field('status').textContent=(data.rows.length?'Próximos 90 minutos.':'Sin llegadas disponibles en los próximos 90 minutos.')+(fresh?'':' Se usa el horario publicado.');
+      list('arrivals',data.rows.map(r=>labelTime(r.at)+' · '+r.route+' '+r.destination+' · '+r.kind));
+    } catch(e){if(token===request) field('status').textContent=e.message;}
+  }
+  function filterStops() {
+    const n=choices('stop',stops,'sq',r=>r[1]+' · '+(r[2]||r[0]));
+    field('matches').textContent=n?n+' paraderos coincidentes':'Sin paraderos coincidentes.';
+    refresh();
+  }
+  async function loadStops() {
+    const token=++selection, route=field('route').value;
+    stops=[]; filterStops();
+    if(!route) return;
+    try{
+      const rows=sample?sample.stops[route]:await api('route-stops',{city,route});
+      if(token===selection){stops=rows; filterStops();}
+    }catch(e){if(token===selection) field('matches').textContent=e.message;}
+  }
+  function filterRoutes() {
+    choices('route',routes,'rq',r=>r[1]+' · '+r[2]);
+    loadStops();
+  }
+  async function start(){
+    const revision=++catalogRevision;
+    try{
+      if(!sample && !field('city').options.length){
+        cities=await api('cities',{});
+        field('city').replaceChildren(...Object.entries(cities).map(([id,c])=>new Option(c.name,id)));
+        field('cityLabel').hidden=Object.keys(cities).length<2;
+        field('city').value=city;
+      }
+      const rows=sample?sample.routes:await api('routes',{city});
+      if(revision===catalogRevision){routes=rows;filterRoutes();}
+    }
+    catch(e){field('status').textContent=e.message;}
+  }
+  field('city').onchange=()=>{
+    city=field('city').value; routes=[]; filterRoutes();
+    field('mode').textContent=cities[city].name+' · elige la ruta por código o destino.'; start();
+  };
+  field('rq').oninput=filterRoutes; field('route').onchange=loadStops;
+  field('sq').oninput=filterStops; field('stop').onchange=refresh;
+  field('refresh').onclick=()=>!routes.length?start():!stops.length?loadStops():refresh();
+  field('report').onclick=async()=>{
+    const token=request,pair=scope(),kind=field('kind').value;
+    field('report').disabled=true;
+    try{
+      let rows;
+      if(sample){
+        const key=JSON.stringify([pair.route,pair.stop,kind]);
+        if(!localVotes.has(key)||localVotes.get(key).expires<=Date.now()/1000)
+          localVotes.set(key,{...pair,kind,count:1,expires:Math.floor(Date.now()/1000)+1800});
+        rows=localRows(pair);
+      }else rows=await api('alerts',{...pair,kind},true);
+      if(token===request){showReports(rows);field('feedback').textContent=sample?'Aviso de práctica en esta pestaña.':'Tu observación quedó registrada para esta ruta y paradero.';}
+    }catch(e){if(token===request) field('feedback').textContent=e.message;}
+    finally{if(token===request) field('report').disabled=false;}
+  };
+  field('mode').textContent=sample?'Muestra sin conexión · rutas reales de Bogotá. Los avisos de práctica solo aparecen en esta pestaña.':'Bogotá · elige la ruta por código o destino.';
+  field('report').disabled=true; start();
+  setInterval(()=>{if(!document.hidden && field('stop').value) refresh();},60000);
+})();
+</script>
+</html>

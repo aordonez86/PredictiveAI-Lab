@@ -59,4 +59,4 @@ My interests combine **mathematics, data science, and real-world AI applications
 | [Tanquea Mejor](tanquea-mejor/) | Mobility and household economics | Open-data validation, geospatial analysis, 2026 regulatory references, historical and monthly price comparison, route-cost optimization | MVP v0.2.0 |
 | [Sentinel Bogotá](sentinel-bogota/) | Public safety and community services | Citywide statistical indicators, survey comparison, data quality, reproducible reporting | MVP v0.3.0 |
 | [Bitácora de Aseo Urbano](bitacora-aseo-urbano/) | Urban sanitation | Episode reconstruction, missing-data bounds and break-even analysis | Offline prototype with synthetic data |
-| [Intervalo](intervalo/) | Public transit | GTFS arrival boards, headway variability and passenger waiting-time simulation | Bogotá MVP |
+| [Andén al Paso](andenalpaso/) | Public transit | Route-specific boarding stops, arrival boards and expiring community reports | Bogotá MVP |
