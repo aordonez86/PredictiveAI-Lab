@@ -1,0 +1,82 @@
+{
+  "chance_1": {
+    "profit_probability": 0.1,
+    "break_even_probability": 0.0,
+    "loss_probability": 0.9,
+    "mean_payout": 500.0,
+    "mean_net": -690.0,
+    "return_ratio": 0.42016806722689076,
+    "outcomes": 10
+  },
+  "chance_2": {
+    "profit_probability": 0.01,
+    "break_even_probability": 0.0,
+    "loss_probability": 0.99,
+    "mean_payout": 500.0,
+    "mean_net": -690.0,
+    "return_ratio": 0.42016806722689076,
+    "outcomes": 100
+  },
+  "miloto_648_gross": {
+    "True": {
+      "profit_probability": 0.010040694251220566,
+      "break_even_probability": 0.10393273551168287,
+      "loss_probability": 0.8860265702370965,
+      "mean_payout": 1280.8936756305177,
+      "mean_net": -2719.1063243694825,
+      "return_ratio": 0.3202234189076294,
+      "outcomes": 575757
+    },
+    "False": {
+      "profit_probability": 0.01003895740737846,
+      "break_even_probability": 0.10393273551168287,
+      "loss_probability": 0.8860283070809387,
+      "mean_payout": 846.6827151037677,
+      "mean_net": -3153.317284896232,
+      "return_ratio": 0.21167067877594192,
+      "outcomes": 575757
+    }
+  },
+  "bogota_2874_net_scenarios": {
+    "max": {
+      "True": {
+        "profit_probability": 0.02908276595744681,
+        "break_even_probability": 0.08730127659574469,
+        "loss_probability": 0.8836159574468085,
+        "mean_payout": 1771.7198868794326,
+        "mean_net": -4228.280113120567,
+        "return_ratio": 0.29528664781323877,
+        "outcomes": 4700000
+      },
+      "False": {
+        "profit_probability": 0.029082553191489363,
+        "break_even_probability": 0.08730127659574469,
+        "loss_probability": 0.883616170212766,
+        "mean_payout": 1206.6135039007092,
+        "mean_net": -4793.3864960992905,
+        "return_ratio": 0.2011022506501182,
+        "outcomes": 4700000
+      }
+    },
+    "sum": {
+      "True": {
+        "profit_probability": 0.029391489361702126,
+        "break_even_probability": 0.08699255319148937,
+        "loss_probability": 0.8836159574468085,
+        "mean_payout": 1775.3837166666667,
+        "mean_net": -4224.616283333334,
+        "return_ratio": 0.2958972861111111,
+        "outcomes": 4700000
+      },
+      "False": {
+        "profit_probability": 0.02939127659574468,
+        "break_even_probability": 0.08699255319148937,
+        "loss_probability": 0.883616170212766,
+        "mean_payout": 1210.2773336879432,
+        "mean_net": -4789.722666312056,
+        "return_ratio": 0.20171288894799055,
+        "outcomes": 4700000
+      }
+    }
+  }
+}

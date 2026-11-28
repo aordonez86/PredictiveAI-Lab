@@ -60,3 +60,4 @@ My interests combine **mathematics, data science, and real-world AI applications
 | [Sentinel Bogotá](sentinel-bogota/) | Public safety and community services | Citywide statistical indicators, survey comparison, data quality, reproducible reporting | MVP v0.3.0 |
 | [Bitácora de Aseo Urbano](bitacora-aseo-urbano/) | Urban sanitation | Episode reconstruction, missing-data bounds and break-even analysis | Offline prototype with synthetic data |
 | [Andén al Paso](andenalpaso/) | Public transit | Route-specific boarding stops, arrival boards and expiring community reports | Bogotá MVP |
+| [Cuenta Clara](cuenta-clara/) | Consumer economics | Exact prize accounting, probabilistic baselines and prequential validation | Reproducible audit |

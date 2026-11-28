@@ -1,0 +1,26 @@
+{
+  "sha256": "f7a5c015fb126efcdc8505a9fb66a13615f34230cebdcff296ea62ff714db58c",
+  "draws": 1024,
+  "from": "2007-01-05",
+  "to": "2026-10-09",
+  "evaluation": {
+    "uniform": {
+      "accuracy": 0.10315533980582524,
+      "hits": 85,
+      "log_loss": 2.3025850929940894,
+      "simulated_net_before_tax": -399000
+    },
+    "frequency": {
+      "accuracy": 0.10194174757281553,
+      "hits": 84,
+      "log_loss": 2.3131031872059515,
+      "simulated_net_before_tax": -404000
+    },
+    "markov": {
+      "accuracy": 0.08131067961165049,
+      "hits": 67,
+      "log_loss": 2.3741754318169837,
+      "simulated_net_before_tax": -489000
+    }
+  }
+}
